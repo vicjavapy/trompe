@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Un detalle para ti</title>
+  <style>
+    :root {
+      --bg-color: #fefae0;
+      --text: #283618;
+      --stem-color: #4caf50;
+      --flower-core: #5d4037;
+      --petal-color: #ffeb3b;
+      --banana-color: #ffe135;
+      --grass-color: #388e3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      transition: background-color 2s ease;
+      position: relative;
+    }
+
+    body.blooming {
+      background-color: #87CEEB;
+    }
+
+    /* ----- CARTA ----- */
+    .letter-container {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      position: absolute;
+      z-index: 50;
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 15px; color: #bc6c25; }
+    p { font-size: 1rem; line-height: 1.6; margin-bottom: 25px; color: #606c38; text-align: left; }
+    
+    .btn {
+      background-color: #dda15e; color: white; border: none;
+      padding: 12px 24px; font-size: 1rem; font-weight: bold;
+      border-radius: 25px; cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    .btn:hover { background-color: #bc6c25; }
+    .btn:active { transform: scale(0.95); }
+
+    /* ----- JARDÍN ----- */
+    .garden {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      bottom: 20px;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 2s ease 0.5s;
+    }
+
+    .garden.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Base de pasto */
+    .grass-base {
+      position: absolute;
+      bottom: -50px;
+      width: 150vw;
+      height: 150px;
+      background: var(--grass-color);
+      border-radius: 50% 50% 0 0;
+      z-index: 20;
+      transform: translateY(200px);
+      transition: transform 1.5s ease 0.5s;
+    }
+
+    body.blooming .grass-base {
+      transform: translateY(0);
+    }
+
+    /* ----- PLANTAS (Posicionadas individualmente con --x) ----- */
+    .plant {
+      position: absolute;
+      bottom: 0;
+      left: var(--x); /* Reparte las flores a lo largo de la pantalla */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      transform-origin: bottom center;
+      height: var(--h);
+      z-index: var(--z);
+      animation: sway 4s ease-in-out infinite alternate;
+      animation-delay: calc(var(--d) * 1s);
+    }
+
+    /* Tallos */
+    .stem {
+      width: 10px;
+      height: 0; 
+      background: var(--stem-color);
+      border-radius: 5px;
+      position: relative;
+      transform-origin: bottom center;
+    }
+    .garden.show .stem { 
+      animation: grow 2s ease-out forwards; 
+      animation-delay: calc((var(--d) + 0.2) * 1s); 
+    }
+
+    /* Hojitas */
+    .leaf {
+      position: absolute;
+      width: 30px; height: 15px;
+      background: var(--stem-color);
+      border-radius: 15px 0;
+      transform: scale(0);
+    }
+    .leaf.left { left: -25px; bottom: 40%; transform-origin: right bottom; }
+    .leaf.right { right: -25px; bottom: 60%; border-radius: 0 15px; transform-origin: left bottom; }
+    .garden.show .leaf { 
+      animation: bloom 1s ease-out forwards; 
+      animation-delay: calc((var(--d) + 1.2) * 1s); 
+    }
+
+    /* Cabezas de las flores */
+    .flower-head {
+      position: relative;
+      width: 60px; height: 60px;
+      transform: scale(0);
+      margin-bottom: -15px;
+      z-index: 2;
+    }
+    .garden.show .flower-head { 
+      animation: bloom 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+      animation-delay: calc((var(--d) + 1.8) * 1s); 
+    }
+
+    .core {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: var(--flower-core);
+      border-radius: 50%;
+      z-index: 3;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .petal {
+      position: absolute;
+      width: 20px; height: 65px;
+      background: var(--petal-color);
+      border-radius: 20px;
+      top: -32.5px; left: 20px;
+      transform-origin: 10px 62.5px;
+      z-index: 1;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    /* Plátano Clásico (CSS Puro - Ligeramente más grueso) */
+    .banana {
+      position: absolute;
+      width: 80px; height: 80px;
+      background: transparent;
+      box-shadow: -18px 18px 0 0 var(--banana-color); /* Engrosado */
+      border-radius: 50%;
+      transform: rotate(-30deg);
+      top: -30px; left: 5px;
+      z-index: 3;
+    }
+    .banana::after {
+      content: ''; position: absolute;
+      width: 8px; height: 8px; background: #5d4037;
+      border-radius: 50%; bottom: -3px; left: 15px;
+    }
+
+    /* ----- PLÁTANOS EN EL PISO ----- */
+    .floor-banana {
+      position: absolute;
+      width: 80px; height: 80px;
+      background: transparent;
+      box-shadow: -18px 18px 0 0 var(--banana-color); /* Engrosado */
+      border-radius: 50%;
+      z-index: 25;
+      opacity: 0;
+    }
+    .floor-banana::after {
+      content: ''; position: absolute;
+      width: 8px; height: 8px; background: #5d4037;
+      border-radius: 50%; bottom: -3px; left: 15px;
+    }
+    body.blooming .floor-banana {
+      opacity: 1;
+      transition: opacity 1.5s ease;
+      transition-delay: calc((var(--d) + 2) * 1s);
+    }
+
+    /* ----- LUCIÉRNAGAS ----- */
+    .sparkle {
+      position: absolute;
+      width: 6px; height: 6px;
+      background: #fff9c4;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 2px #fff9c4;
+      opacity: 0;
+      z-index: 30;
+      animation: floatUp 4s ease-in infinite;
+    }
+
+    /* ----- MENSAJE FINAL ----- */
+    .final-msg {
+      position: absolute;
+      top: 10%;
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 0 0 15px rgba(255, 235, 59, 0.5), 2px 2px 8px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.5s ease, transform 1.5s ease;
+      z-index: 60;
+    }
+    .final-msg.show { opacity: 1; transform: translateY(0); }
+
+    /* Animaciones Generales */
+    @keyframes sway { 
+      0% { transform: scale(var(--s)) rotate(-4deg); } 
+      100% { transform: scale(var(--s)) rotate(4deg); } 
+    }
+    @keyframes grow { 0% { height: 0; } 100% { height: 100%; } }
+    @keyframes bloom { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      50% { opacity: 0.8; transform: translateY(-50px) scale(1); }
+      100% { transform: translateY(-100px) scale(0); opacity: 0; }
+    }
+    
+    .p1 { transform: rotate(0deg); } .p2 { transform: rotate(30deg); } .p3 { transform: rotate(60deg); }
+    .p4 { transform: rotate(90deg); } .p5 { transform: rotate(120deg); } .p6 { transform: rotate(150deg); }
+    .p7 { transform: rotate(180deg); } .p8 { transform: rotate(210deg); } .p9 { transform: rotate(240deg); }
+    .p10 { transform: rotate(270deg); } .p11 { transform: rotate(300deg); } .p12 { transform: rotate(330deg); }
+
+    /* ----- RESPONSIVO PARA CELULARES ----- */
+    @media (max-width: 768px) {
+      .final-msg { font-size: 2.5rem; top: 8%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Carta Inicial -->
+  <div class="letter-container" id="letter">
+    <h1>¡Hola, amiga!</h1>
+    <p>
+      Mira, la verdad yo no soy mucho de nada ni esto del otro, pero sé que esto está muy de moda y demás y te quise hacer esto de las flores y pues ya algo así.
+    </p>
+    <button class="btn" onclick="startMagic()">Aquí está tu chingadera</button>
+  </div>
+
+  <!-- Mensaje Final -->
+  <div class="final-msg" id="te-quiero">Te quiero.</div>
+
+  <!-- El Jardín Animado -->
+  <div class="garden" id="garden">
+    
+    <!-- Las flores ahora tienen coordenadas exactas de izquierda (--x) para esparcirse por toda la pantalla -->
+    <div class="plant" style="--x: 2vw; --h: 35vh; --d: 0.1; --s: 0.8; --z: 4;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 12vw; --h: 60vh; --d: 1.2; --s: 1.1; --z: 1;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf right"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 20vw; --h: 40vh; --d: 0.5; --s: 0.9; --z: 3;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div><div class="leaf right"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 28vw; --h: 80vh; --d: 1.8; --s: 1.3; --z: 0;"> <!-- FLOR MUY ALTA -->
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 38vw; --h: 50vh; --d: 0.9; --s: 1.0; --z: 2;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf right"></div></div>
+    </div>
+
+    <!-- EL PLÁTANO CON TALLO (CENTRO) -->
+    <div class="plant" style="--x: 48vw; --h: 65vh; --d: 1.5; --s: 1.1; --z: 3;">
+      <div class="flower-head" style="width: 80px; margin-left: 20px;">
+        <div class="banana"></div>
+      </div>
+      <div class="stem"></div>
+    </div>
+
+    <div class="plant" style="--x: 58vw; --h: 85vh; --d: 2.1; --s: 1.4; --z: 0;"> <!-- LA MÁS ALTA -->
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div><div class="leaf right"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 68vw; --h: 45vh; --d: 0.4; --s: 0.85; --z: 4;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 75vw; --h: 30vh; --d: 0.8; --s: 0.7; --z: 5;"> <!-- FLOR BAJITA ENFRENTE -->
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf right"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 82vw; --h: 75vh; --d: 2.4; --s: 1.3; --z: 1;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div></div>
+    </div>
+
+    <div class="plant" style="--x: 90vw; --h: 55vh; --d: 1.1; --s: 1.0; --z: 2;">
+      <div class="flower-head"><div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div><div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div><div class="petal p7"></div><div class="petal p8"></div><div class="petal p9"></div><div class="petal p10"></div><div class="petal p11"></div><div class="petal p12"></div><div class="core"></div></div>
+      <div class="stem"><div class="leaf left"></div><div class="leaf right"></div></div>
+    </div>
+
+  </div>
+  
+  <!-- Base de pasto -->
+  <div class="grass-base">
+    <!-- PLÁTANOS TIRADOS EN EL PISO (Aparecen poco a poco) -->
+    <div class="floor-banana" style="--d: 1.5; left: 10%; top: 40px; transform: rotate(-70deg) scale(0.9);"></div>
+    <div class="floor-banana" style="--d: 2.2; left: 30%; top: 15px; transform: rotate(-110deg) scale(1.1);"></div>
+    <div class="floor-banana" style="--d: 1.8; left: 48%; top: 60px; transform: rotate(-50deg) scale(0.85);"></div>
+    <div class="floor-banana" style="--d: 2.5; right: 28%; top: 30px; transform: rotate(-100deg) scale(1);"></div>
+    <div class="floor-banana" style="--d: 1.2; right: 8%; top: 50px; transform: rotate(-80deg) scale(1.15);"></div>
+  </div>
+
+  <script>
+    function startMagic() {
+      const letter = document.getElementById('letter');
+      letter.style.opacity = '0';
+      letter.style.transform = 'translateY(-50px)';
+      letter.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        document.body.classList.add('blooming');
+        document.getElementById('garden').classList.add('show');
+        createSparkles(); 
+      }, 300);
+
+      setTimeout(() => {
+        document.getElementById('te-quiero').classList.add('show');
+      }, 5500);
+    }
+
+    function createSparkles() {
+      const numSparkles = 25;
+      for(let i = 0; i < numSparkles; i++) {
+        setTimeout(() => {
+          let sparkle = document.createElement('div');
+          sparkle.classList.add('sparkle');
+          
+          sparkle.style.left = Math.random() * 100 + 'vw';
+          sparkle.style.bottom = (Math.random() * 40 + 10) + 'vh';
+          sparkle.style.animationDuration = (Math.random() * 2 + 3) + 's';
+          
+          document.body.appendChild(sparkle);
+          
+          setTimeout(() => { sparkle.remove(); }, 5000);
+          
+        }, Math.random() * 4000); 
+      }
+    }
+  </script>
+
+</body>
+</html>
